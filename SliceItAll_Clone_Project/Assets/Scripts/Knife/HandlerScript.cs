@@ -6,12 +6,14 @@ public class HandlerScript : MonoBehaviour
 {   
     [field: SerializeField] public bool Hit{ get; set;}
 
-    private void OnCollisionEnter(Collision other)
-    {
+    private void OnTriggerEnter(Collider other)
+    {   
+        if (!(other.tag.Equals("Platform") || other.tag.Equals("Sliceble"))) { return; }
+      
         Hit = true;
     }
 
-    private void OnCollisionExit(Collision other)
+    private void OnTriggerExit(Collider other) 
     {
         Hit = false;
     }

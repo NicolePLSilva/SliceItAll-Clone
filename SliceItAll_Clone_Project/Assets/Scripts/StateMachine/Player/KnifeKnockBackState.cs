@@ -6,10 +6,10 @@ public class KnifeKnockBackState : PlayerBaseState
 {
     public KnifeKnockBackState(PlayerStateMachine stateMachine) : base(stateMachine){}
 
-     public override void Enter()
+    public override void Enter()
     {
-        _stateMachine.Rigidbody.AddForce((Vector3.back + Vector3.up) * (_stateMachine.Force/3) , ForceMode.VelocityChange);
         _stateMachine.InputReader.TouchEvent += OnTap;
+        KnockBack();
     }
 
     public override void InProgress(float deltaTime)
@@ -26,5 +26,13 @@ public class KnifeKnockBackState : PlayerBaseState
     {
         _stateMachine.Handler.Hit = false;
         _stateMachine.SwitchState(new KnifeSpinningState(_stateMachine));
+    }
+
+    public void KnockBack()
+    {
+        _stateMachine.Rigidbody.velocity = Vector3.zero;
+        _stateMachine.Rigidbody.AddForce((Vector3.back + Vector3.up) * (_stateMachine.Force), ForceMode.Impulse );
+        _stateMachine.KnifeScript.HandlerGravityCoroutine(0.2f);        
+
     }
 }

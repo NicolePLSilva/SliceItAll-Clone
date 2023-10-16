@@ -5,7 +5,10 @@ using UnityEngine;
 
 public class KnifeSpinningState : PlayerBaseState
 {
+    private bool requestSpin;
+
     private float CanStickTimer = .35f;
+
     public KnifeSpinningState(PlayerStateMachine stateMachine): base(stateMachine){}
 
     public override void Enter()
@@ -16,6 +19,7 @@ public class KnifeSpinningState : PlayerBaseState
     public override void InProgress(float deltaTime)
     {
         HitHandlerCheck();
+        CalculateSpin();
         CanStickTimer -= Time.deltaTime;
         if(CanStickTimer > 0) { return; } 
         HitPlatformCheck();
@@ -30,20 +34,27 @@ public class KnifeSpinningState : PlayerBaseState
     {
         _stateMachine.Rigidbody.isKinematic = false;
         CanStickTimer = .35f;
-        CalculateSpin();
+        requestSpin = true;
 
     }
 
     private void CalculateSpin()
     {
-        Vector3 movement = new(0f, _stateMachine.VerticalMovementForce,
-                _stateMachine.HorizontalMovementForce);
-        float force = _stateMachine.Force;
-        float Torque = _stateMachine.Torque;
-        _stateMachine.Rigidbody.AddForce(movement * force, ForceMode.Impulse);
-        _stateMachine.Rigidbody.AddRelativeTorque(Torque, 0f, 0f, ForceMode.Impulse);
-        _stateMachine.KnifeScript.CanSpin = true;
-        _stateMachine.Rigidbody.AddForce(Vector3.down * force, ForceMode.Acceleration);
+        if(requestSpin)
+        {
+
+            Vector3 force = new Vector3( 0f, _stateMachine.HorizontalMovementForce , _stateMachine.VerticalMovementForce ); 
+            float yForce = Mathf.Sqrt(_stateMachine.VerticalMovementForce * -2 * Physics.gravity.y );
+            float zForce = Mathf.Sqrt(_stateMachine.HorizontalMovementForce * -2 * Physics.gravity.y );
+            _stateMachine.Rigidbody.velocity = Vector3.zero; 
+            _stateMachine.Rigidbody.AddForce(new Vector3(0, yForce,zForce), ForceMode.Impulse);
+            
+            _stateMachine.KnifeScript.HandlerCoroutines(_stateMachine.DelayGravityTime, _stateMachine.RotationDuration);
+
+
+            requestSpin = false;
+        }
+      
     }
 
     private void HitPlatformCheck()
